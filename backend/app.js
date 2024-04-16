@@ -22,17 +22,9 @@ app.post("/validate", (req, res) => {
 
   fs.writeFileSync(file, code);
 
-  res.set("Content-Type", "application/json");
   res.status(200).send(
     JSON.stringify({
-      issue: `
-        test.java:4: error: Null Dereference
-        object \`s\` last assigned on line 3 could be null and is dereferenced at line 4.
-        2.     int test() {
-        4. >     return s.length();
-        5.     }
-        6.   }
-    `,
+      msg: `created`,
     })
   );
 });
@@ -41,8 +33,31 @@ app.post("/correct", (req, res) => {
   const code = req.body.code;
   const issue = req.body.issue;
 
-  const prompt = `${code}\n This piece of code has the following issue(s): \n ${issue} \n Correct this.`;
+  const prompt = `${code}\n This piece of code has the following issue(s): \n ${issue} \n Correct this and provides some explanations.`;
 
   res.set("Content-Type", "application/json");
   res.status(200).send(JSON.stringify({ prompt: prompt }));
+});
+
+app.get("/docker", (req, res) => {
+  const { exec } = require("child_process");
+  exec("infer run -- javac test.java", (err, stdout, stderr) => {
+    if (err) {
+      res.status(200).send(
+        JSON.stringify({
+          error: err.toString(),
+        })
+      );
+      return;
+    }
+    console.log(`stdout: ${stdout}`);
+    console.log(`stderr: ${stderr}`);
+    res.set("Content-Type", "application/json");
+    res.status(200).send(
+      JSON.stringify({
+        stdout: stdout,
+        stderr: stderr,
+      })
+    );
+  });
 });

@@ -11,6 +11,8 @@ function App() {
   const [correctText, setCorrectText] = useState("");
   const [issue, setIssue] = useState("");
 
+  const [fieldInput, setFieldInput] = useState("");
+
   useEffect(() => {
     window.addEventListener("paste", (e) => {
       const text = e.clipboardData.getData("text");
@@ -25,7 +27,16 @@ function App() {
           }
         )
         .then(function (response) {
-          setIssue(response.data.issue);
+          return axios.get(baseUrl + "docker", {
+            headers: { "Access-Control-Allow-Origin": true },
+          });
+        })
+        .then((response) => {
+          if (response.data.error) {
+            setIssue(response.data.error.toString());
+          } else {
+            setIssue(response.data.stdout);
+          }
         });
     });
 
@@ -36,8 +47,9 @@ function App() {
 
   return (
     <div className="App">
-      <header className="App-header">
+      <header className="App-header text-start">
         <ReactDiffViewer
+          className="text-black"
           oldValue={inputText}
           newValue={correctText}
           splitView={true}
@@ -68,9 +80,14 @@ function App() {
           <button className="px-5 bg-blue-600 rounded-full">Reset</button>
         </div>
         <textarea
-          onChange={(e) => {
+          className="text-black"
+          rows={4}
+          cols={40}
+          onPaste={(e) => {
             e.stopPropagation();
-            setCorrectText(e.target.value);
+          }}
+          onChange={(e) => {
+            setFieldInput(e.target.value);
           }}
         />
       </header>
