@@ -8,6 +8,8 @@ const PORT = 3001;
 app.use(cors());
 app.use(express.json());
 
+var file = "test.java";
+
 app.listen(PORT, (error) => {
   if (!error)
     console.log(
@@ -18,7 +20,9 @@ app.listen(PORT, (error) => {
 
 app.post("/validate", (req, res) => {
   const code = req.body.code;
-  const file = "test.java";
+  if (code.split("class ")[1]) {
+    file = code.split("class ")[1].split(" ")[0] + ".java";
+  }
 
   fs.writeFileSync(file, code);
 
@@ -41,7 +45,7 @@ app.post("/correct", (req, res) => {
 
 app.get("/docker", (req, res) => {
   const { exec } = require("child_process");
-  exec("infer run -- javac test.java", (err, stdout, stderr) => {
+  exec(`infer run -- javac ${file}`, (err, stdout, stderr) => {
     if (err) {
       res.status(200).send(
         JSON.stringify({

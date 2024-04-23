@@ -8,7 +8,6 @@ const baseUrl = "http://localhost:3001/";
 
 function App() {
   const [inputText, setInputText] = useState("");
-  const [correctText, setCorrectText] = useState("");
   const [issue, setIssue] = useState("");
 
   const [fieldInput, setFieldInput] = useState("");
@@ -39,7 +38,6 @@ function App() {
           }
         });
     });
-
     return () => {
       window.removeEventListener("paste", null);
     };
@@ -48,48 +46,62 @@ function App() {
   return (
     <div className="App">
       <header className="App-header text-start">
+        {inputText === "" && <>Paste Code Snippet to Start</>}
         <ReactDiffViewer
           className="text-black"
           oldValue={inputText}
-          newValue={correctText}
+          newValue={fieldInput}
           splitView={true}
         />
         <div className="text-left text-red-600 whitespace-pre-wrap">
           {issue}
         </div>
-
-        <div className="flex gap-10">
-          <button
-            className="px-5 bg-green-600 rounded-full"
-            onClick={() => {
-              axios
-                .post(
-                  baseUrl + "correct",
-                  { code: inputText, issue: issue },
-                  {
-                    headers: { "Access-Control-Allow-Origin": true },
-                  }
-                )
-                .then(function (response) {
-                  navigator.clipboard.writeText(response.data.prompt);
-                });
-            }}
-          >
-            Correct It
-          </button>
-          <button className="px-5 bg-blue-600 rounded-full">Reset</button>
-        </div>
-        <textarea
-          className="text-black"
-          rows={4}
-          cols={40}
-          onPaste={(e) => {
-            e.stopPropagation();
+        {issue !== "" && !issue.includes("No issues found") && (
+          <div>
+            <div className="flex items-center justify-center gap-10 my-8">
+              <button
+                className="px-5 bg-green-600 rounded-full"
+                onClick={() => {
+                  axios
+                    .post(
+                      baseUrl + "correct",
+                      { code: inputText, issue: issue },
+                      {
+                        headers: { "Access-Control-Allow-Origin": true },
+                      }
+                    )
+                    .then(function (response) {
+                      navigator.clipboard.writeText(response.data.prompt);
+                    });
+                }}
+              >
+                Retrieve Prompt
+              </button>
+            </div>
+            <textarea
+              className="text-black"
+              rows={4}
+              cols={40}
+              onPaste={(e) => {
+                e.stopPropagation();
+              }}
+              onChange={(e) => {
+                setFieldInput(e.target.value);
+              }}
+            />
+            <div>Paste Modified Code In the Box</div>
+          </div>
+        )}
+        <button
+          className="px-5 my-6 bg-blue-600 rounded-full"
+          onClick={() => {
+            setInputText("");
+            setIssue("");
+            setFieldInput("");
           }}
-          onChange={(e) => {
-            setFieldInput(e.target.value);
-          }}
-        />
+        >
+          Reset
+        </button>
       </header>
     </div>
   );
