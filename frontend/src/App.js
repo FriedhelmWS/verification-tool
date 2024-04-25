@@ -14,7 +14,9 @@ function App() {
 
   useEffect(() => {
     window.addEventListener("paste", (e) => {
+      // Add listener to paste event
       const text = e.clipboardData.getData("text");
+
       setInputText(text);
 
       axios
@@ -71,6 +73,7 @@ function App() {
                       }
                     )
                     .then(function (response) {
+                      // Get LLM promopt and copy to clipboard
                       navigator.clipboard.writeText(response.data.prompt);
                     });
                 }}
